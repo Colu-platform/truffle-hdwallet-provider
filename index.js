@@ -22,7 +22,7 @@ function HDWalletProvider(mnemonics, provider_url, address_index=0, num_addresse
       this.hdwallets.push(hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic)));
     }
   })
-  
+
   this.wallet_hdpath = "m/44'/60'/0'/0/";
   this.wallets = {};
   this.addresses = [];
@@ -35,7 +35,6 @@ function HDWalletProvider(mnemonics, provider_url, address_index=0, num_addresse
       this.wallets[addr] = wallet;
     }
   })
-  
 
   const tmp_accounts = this.addresses;
   const tmp_wallets = this.wallets;
@@ -79,6 +78,15 @@ HDWalletProvider.prototype.getAddress = function(idx) {
 // returns the addresses cache
 HDWalletProvider.prototype.getAddresses = function() {
   return this.addresses;
+}
+
+// add a new address
+HDWalletProvider.prototype.addAddress = function(wallet_index=0) {
+  var nAddresses = this.addresses.length;
+  var wallet = this.hdwallets[wallet_index].derivePath(this.wallet_hdpath + nAddresses).getWallet();
+  var addr = '0x' + wallet.getAddress().toString('hex');
+  this.addresses.push(addr);
+  this.wallets[addr] = wallet;
 }
 
 module.exports = HDWalletProvider;
