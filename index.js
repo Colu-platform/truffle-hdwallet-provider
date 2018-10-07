@@ -26,13 +26,16 @@ function HDWalletProvider(mnemonics, provider_url, address_index=0, num_addresse
   this.wallet_hdpath = "m/44'/60'/0'/0/";
   this.wallets = {};
   this.addresses = [];
+  this.walletsToAddresses = {}
 
-  this.hdwallets.forEach((hdwallet) => {
+  this.hdwallets.forEach((hdwallet, j) => {
+    this.walletsToAddresses[j] = [];
     for (let i = address_index; i < address_index + num_addresses; i++) {
       var wallet = hdwallet.derivePath(this.wallet_hdpath + i).getWallet();
       var addr = '0x' + wallet.getAddress().toString('hex');
       this.addresses.push(addr);
       this.wallets[addr] = wallet;
+      this.walletsToAddresses[j].push(addr);
     }
   })
 
@@ -70,23 +73,31 @@ HDWalletProvider.prototype.send = function() {
 };
 
 // returns the address of the given address_index, first checking the cache
-HDWalletProvider.prototype.getAddress = function(idx) {
-  if (!idx) { return this.addresses[0]; }
-  else { return this.addresses[idx]; }
+HDWalletProvider.prototype.getAddress = function(address_index=0, wallet_index) {
+  if (typeof wallet_index !== 'undefined') {
+    return this.walletsToAddresses[wallet_index][address_index];
+  } else {
+    return this.addresses[address_index];
+  }
 }
 
 // returns the addresses cache
-HDWalletProvider.prototype.getAddresses = function() {
-  return this.addresses;
+HDWalletProvider.prototype.getAddresses = function(wallet_index) {
+  if (typeof wallet_index !== 'undefined') {
+    return this.walletsToAddresses[wallet_index];
+  } else {
+    return this.addresses;
+  }
 }
 
 // add a new address
 HDWalletProvider.prototype.addAddress = function(wallet_index=0) {
-  var nAddresses = this.addresses.length;
+  var nAddresses = this.walletsToAddresses[wallet_index].length;
   var wallet = this.hdwallets[wallet_index].derivePath(this.wallet_hdpath + nAddresses).getWallet();
   var addr = '0x' + wallet.getAddress().toString('hex');
   this.addresses.push(addr);
   this.wallets[addr] = wallet;
+  this.walletsToAddresses[wallet_index].push(addr);
 }
 
 module.exports = HDWalletProvider;
