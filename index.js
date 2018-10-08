@@ -98,6 +98,7 @@ HDWalletProvider.prototype.addAddress = function(wallet_index=0) {
   this.addresses.push(addr);
   this.wallets[addr] = wallet;
   this.walletsToAddresses[wallet_index].push(addr);
+  return addr;
 }
 
 module.exports = HDWalletProvider;
